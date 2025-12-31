@@ -35,6 +35,9 @@ export {
   MONTHLY_BOOKINGS_COUNT_QUERY,
 } from "./bookings";
 
+// Class requests
+export { PENDING_CLASS_REQUESTS_QUERY, CLASS_REQUEST_BY_ID_QUERY } from "./classRequests";
+
 // AI Tools
 export {
   AI_SEARCH_ACTIVITIES_QUERY,

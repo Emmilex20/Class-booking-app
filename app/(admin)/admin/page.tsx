@@ -3,14 +3,14 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { useDocuments } from "@sanity/sdk-react";
-import { Bolt, Home, Calendar, ArrowRight } from "lucide-react";
+import { Bolt, Home, Calendar, ArrowRight, MessageCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function DocumentCount({
   documentType,
 }: {
-  documentType: "activity" | "venue" | "classSession";
+  documentType: "activity" | "venue" | "classSession" | "classRequest";
 }) {
   const { data } = useDocuments({ documentType });
   return <span>{data?.length ?? 0}</span>;
@@ -47,6 +47,15 @@ const sections = [
     documentType: "classSession" as const,
     color: "text-purple-500",
     bgColor: "bg-purple-500/10",
+  },
+  {
+    title: "Requests",
+    description: "User-submitted class requests awaiting review",
+    href: "/admin/class-requests",
+    icon: MessageCircle,
+    documentType: "classRequest" as const,
+    color: "text-amber-500",
+    bgColor: "bg-amber-500/10",
   },
 ];
 

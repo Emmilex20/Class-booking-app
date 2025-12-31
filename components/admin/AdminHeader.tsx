@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dumbbell, LayoutDashboard, Bolt, Home } from "lucide-react";
+import { Dumbbell, LayoutDashboard, Bolt, Home, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/activities", label: "Activities", icon: Bolt },
   { href: "/admin/venues", label: "Venues", icon: Home },
+  { href: "/admin/class-requests", label: "Requests", icon: MessageCircle },
 ];
 
 export function AdminHeader() {

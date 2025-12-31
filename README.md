@@ -34,3 +34,13 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+
+Admin authentication
+
+- The admin API endpoints now enforce that the calling user is an admin. Adminness is determined by one of:
+  - setting `user.publicMetadata.isAdmin = true` on the Clerk user, or
+  - setting `CLERK_ADMIN_IDS` (comma-separated IDs) or `CLERK_ADMIN_EMAILS` (comma-separated emails) in your environment.
+
+Make sure you set the appropriate env vars in your local `.env.local` and in Vercel so admin pages and actions are protected.

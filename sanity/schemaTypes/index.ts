@@ -5,6 +5,7 @@ import { activityType } from "./activityType";
 import { classSessionType } from "./classSessionType";
 import { bookingType } from "./bookingType";
 import { userProfileType } from "./userProfileType";
+import { classRequestType } from "./classRequestType";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -14,5 +15,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     activityType,
     classSessionType,
     bookingType,
+    classRequestType,
   ],
 };

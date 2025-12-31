@@ -18,10 +18,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
-import { Dumbbell, MenuIcon } from "lucide-react";
+import { Dumbbell, MenuIcon, Home } from "lucide-react";
 
 const navItems = [
-  { href: "/classes", label: "Classes" },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/classes", label: "Classes", icon: Dumbbell },
   { href: "/bookings", label: "My Bookings" },
   { href: "/profile", label: "Profile" },
 ];
@@ -37,13 +38,12 @@ export function AppHeader() {
   }, []);
 
   // Don't show header on onboarding page
-  if (pathname === "/onboarding") {
-    return null;
-  }
+  if (pathname === "/onboarding") return null;
 
   return (
-    <header className="border-b bg-background">
+    <header className="sticky top-0 z-50 border-b bg-background shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {/* Logo */}
         <Link
           href={isSignedIn ? "/classes" : "/"}
           className="flex items-center gap-2 text-xl font-bold"
@@ -59,30 +59,29 @@ export function AppHeader() {
               {isSignedIn &&
                 navItems.map((item) => {
                   const isActive =
-                    pathname === item.href || pathname.startsWith(`${item.href}/`);
-
+                    pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        "text-sm font-medium transition-colors",
+                        "flex items-center gap-1 text-sm font-medium transition-colors",
                         isActive
                           ? "font-semibold text-primary"
                           : "text-muted-foreground hover:text-foreground"
                       )}
                     >
+                      {item.icon && <item.icon className="h-4 w-4" />}
                       {item.label}
                     </Link>
                   );
                 })}
 
+              {/* Auth Buttons */}
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button
-                    type="button"
-                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                  >
+                  <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
                     Sign In
                   </button>
                 </SignInButton>
@@ -117,36 +116,33 @@ export function AppHeader() {
                       Menu
                     </SheetTitle>
                   </SheetHeader>
-                  <nav className="flex flex-col gap-2 px-2">
+                  <nav className="flex flex-col gap-2 px-2 mt-4">
                     {isSignedIn &&
                       navItems.map((item) => {
                         const isActive =
                           pathname === item.href ||
                           pathname.startsWith(`${item.href}/`);
-
                         return (
                           <Link
                             key={item.href}
                             href={item.href}
                             onClick={() => setOpen(false)}
                             className={cn(
-                              "rounded-lg px-4 py-3 text-base font-medium transition-all duration-200",
+                              "flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium transition-all duration-200",
                               isActive
                                 ? "border border-primary/20 bg-primary/10 font-semibold text-primary"
                                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                             )}
                           >
+                            {item.icon && <item.icon className="h-5 w-5" />}
                             {item.label}
                           </Link>
                         );
                       })}
                     <SignedOut>
-                      <div className={`${isSignedIn ? "mt-6 border-t pt-6" : "mt-0"}`}>
+                      <div className="mt-6 border-t pt-6">
                         <SignInButton mode="modal">
-                          <button
-                            type="button"
-                            className="w-full rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-                          >
+                          <button className="w-full rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90">
                             Sign In
                           </button>
                         </SignInButton>

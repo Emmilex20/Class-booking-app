@@ -70,42 +70,103 @@ export function RequestsList({ initial }: { initial: RequestItem[] }) {
   }
 
   if (!items.length) {
-    return <p className="text-muted-foreground">No pending requests</p>;
+    return (
+      <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
+        No pending requests
+      </div>
+    );
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 sm:gap-6">
       {items.map((r) => (
-        <Card key={r._id} className="p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold">{r.title}</h3>
-              <div className="text-sm text-muted-foreground">
+        <Card
+          key={r._id}
+          className="p-4 sm:p-6 transition-shadow hover:shadow-md"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            {/* Left content */}
+            <div className="flex-1 space-y-2">
+              <h3 className="text-lg sm:text-xl font-semibold leading-tight">
+                {r.title}
+              </h3>
+
+              <div className="text-xs sm:text-sm text-muted-foreground">
                 {r.requester?.name || r.requester?.email}
-                {r._createdAt ? ` • ${new Date(r._createdAt).toLocaleString()}` : ""}
-              </div>
-              <div className="mt-2 text-sm">
-                <div className="prose max-w-none">
-                  {/* description may be portable text; show a short fallback */}
-                  {r.description ? JSON.stringify(r.description).slice(0, 180) : "No description"}
-                </div>
-                <div className="mt-2 flex gap-2 text-xs">
-                  {r.categoryName && <Badge variant="secondary">{r.categoryName}</Badge>}
-                  {r.instructor && <Badge variant="secondary">Instructor: {r.instructor}</Badge>}
-                  {r.duration && <Badge variant="secondary">{r.duration} min</Badge>}
-                </div>
-                {r.suggestedVenue?.name && (
-                  <div className="mt-2 text-sm">Suggested: {r.suggestedVenue.name} {r.suggestedVenue.address ? `• ${r.suggestedVenue.address}` : ""}</div>
+                {r._createdAt && (
+                  <span className="mx-1">•</span>
                 )}
-                {r.preferredTimes?.length ? (
-                  <div className="mt-2 text-sm">Preferred times: {r.preferredTimes.map((t) => new Date(t).toLocaleString()).join(", ")}</div>
-                ) : null}
+                {r._createdAt &&
+                  new Date(r._createdAt).toLocaleString()}
               </div>
+
+              <div className="pt-2 text-sm text-muted-foreground leading-relaxed">
+                {r.description
+                  ? JSON.stringify(r.description).slice(0, 180)
+                  : "No description provided."}
+              </div>
+
+              {/* Meta badges */}
+              <div className="flex flex-wrap gap-2 pt-3">
+                {r.categoryName && (
+                  <Badge variant="secondary">{r.categoryName}</Badge>
+                )}
+                {r.instructor && (
+                  <Badge variant="secondary">
+                    Instructor: {r.instructor}
+                  </Badge>
+                )}
+                {r.duration && (
+                  <Badge variant="secondary">{r.duration} min</Badge>
+                )}
+              </div>
+
+              {/* Extra info */}
+              {r.suggestedVenue?.name && (
+                <div className="pt-3 text-sm">
+                  <span className="font-medium">Suggested venue:</span>{" "}
+                  {r.suggestedVenue.name}
+                  {r.suggestedVenue.address && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      • {r.suggestedVenue.address}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {r.preferredTimes?.length ? (
+                <div className="pt-2 text-sm">
+                  <span className="font-medium">Preferred times:</span>{" "}
+                  <span className="text-muted-foreground">
+                    {r.preferredTimes
+                      .map((t) =>
+                        new Date(t).toLocaleString()
+                      )
+                      .join(", ")}
+                  </span>
+                </div>
+              ) : null}
             </div>
 
-            <div className="ml-4 flex flex-col gap-2">
-              <Button onClick={() => handleApprove(r._id)} disabled={!!processing || processing === r._id} className="bg-success text-white">Approve</Button>
-              <Button variant="ghost" onClick={() => handleReject(r._id)} disabled={!!processing || processing === r._id}>Reject</Button>
+            {/* Actions */}
+            <div className="flex flex-row lg:flex-col gap-2 lg:min-w-35">
+              <Button
+                onClick={() => handleApprove(r._id)}
+                disabled={!!processing || processing === r._id}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {processing === r._id ? "Processing..." : "Approve"}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => handleReject(r._id)}
+                disabled={!!processing || processing === r._id}
+                className="w-full"
+              >
+                Reject
+              </Button>
             </div>
           </div>
         </Card>

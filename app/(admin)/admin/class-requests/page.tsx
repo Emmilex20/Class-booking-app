@@ -12,8 +12,13 @@ export default async function ClassRequestsPage() {
 
   const adminCheck = await requireAdmin();
   if (!adminCheck.ok) {
-    // Not an admin — redirect to home (or show 403)
-    redirect("/");
+    // Not an admin — show an access denied message instead of redirecting
+    return (
+      <div className="py-20 text-center">
+        <h2 className="text-xl font-semibold">Access denied</h2>
+        <p className="text-muted-foreground mt-2">You must be an admin to view this page.</p>
+      </div>
+    );
   }
 
   const res = await sanityFetch({ query: PENDING_CLASS_REQUESTS_QUERY }).catch(() => ({ data: [] }));

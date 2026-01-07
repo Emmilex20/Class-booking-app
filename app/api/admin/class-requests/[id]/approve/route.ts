@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   try {
     const url = new URL(req.url);
     const pathParts = url.pathname.split("/").filter(Boolean);
-    const id = pathParts[pathParts.length - 3]; // /api/admin/class-requests/[id]/approve
+    const id = pathParts[pathParts.length - 2]; // /api/admin/class-requests/[id]/approve
 
     // Require admin
     const adminCheck = await requireAdmin();

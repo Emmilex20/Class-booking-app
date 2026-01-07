@@ -3,7 +3,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { useDocuments } from "@sanity/sdk-react";
-import { Bolt, Home, Calendar, ArrowRight, MessageCircle } from "lucide-react";
+import { Bolt, Home, Calendar, ArrowRight, MessageCircle, Users as UsersIcon } from "lucide-react";
+import UsersCount from "@/components/admin/UsersCount";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -57,6 +58,16 @@ const sections = [
     color: "text-amber-500",
     bgColor: "bg-amber-500/10",
   },
+  {
+    title: "Users",
+    description: "Manage workspace users and admin privileges",
+    href: "/admin/users",
+    icon: UsersIcon,
+    // No Sanity document type for users (external provider)
+    documentType: undefined,
+    color: "text-sky-500",
+    bgColor: "bg-sky-500/10",
+  },
 ];
 
 export default function AdminDashboard() {
@@ -73,7 +84,7 @@ export default function AdminDashboard() {
         {sections.map((section) => {
           const Icon = section.icon;
           return (
-            <Link key={section.documentType} href={section.href}>
+            <Link key={section.title} href={section.href}>
               <Card className="group h-full transition-all hover:border-primary hover:shadow-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -85,9 +96,16 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    <Suspense fallback={<DocumentCountSkeleton />}>
-                      <DocumentCount documentType={section.documentType} />
-                    </Suspense>
+                    {section.documentType ? (
+                      <Suspense fallback={<DocumentCountSkeleton />}>
+                        <DocumentCount documentType={section.documentType} />
+                      </Suspense>
+                    ) : section.title === "Users" ? (
+                      // Show live user count
+                      <UsersCount />
+                    ) : (
+                      <span className="text-base text-muted-foreground">—</span>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {section.description}

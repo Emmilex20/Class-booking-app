@@ -1,5 +1,5 @@
 {
-  "crons": [{ "path": "/api/cron/reminders", "schedule": "0 * * * *" }],
+  "crons": [{ "path": "/api/cron/reminders", "schedule": "0 9 * * *" }],
   "rewrites": [
     { "source": "/", "destination": "/studio" },
     { "source": "/studio/:path*", "destination": "/studio/:path*" }

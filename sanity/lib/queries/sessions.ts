@@ -46,6 +46,7 @@ export const SESSION_BY_ID_QUERY = defineQuery(`*[
   startTime,
   maxCapacity,
   status,
+  liveStreamUrl,
   "currentBookings": count(*[
     _type == "booking" 
     && classSession._ref == ^._id 

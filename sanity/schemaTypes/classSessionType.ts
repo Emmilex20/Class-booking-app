@@ -54,6 +54,17 @@ export const classSessionType = defineType({
       },
       initialValue: "scheduled",
     }),
+    defineField({
+      name: "liveStreamUrl",
+      title: "Live Stream URL",
+      type: "url",
+      description:
+        "Public video URL for attendees (YouTube/Vimeo embed or direct MP4 link)",
+      validation: (Rule) =>
+        Rule.uri({
+          scheme: ["http", "https"],
+        }),
+    }),
   ],
   orderings: [
     {

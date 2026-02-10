@@ -1,15 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   SignedIn,
   SignedOut,
   SignInButton,
   UserButton,
   useAuth,
+  useUser,
 } from "@clerk/nextjs";
-import { cn } from "@/lib/utils";
+import { Dumbbell, Home, MenuIcon, Shield } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -17,8 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useState, useEffect } from "react";
-import { Dumbbell, MenuIcon, Home } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -30,8 +31,10 @@ const navItems = [
 export function AppHeader() {
   const pathname = usePathname();
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const isAdmin = Boolean(user?.publicMetadata?.isAdmin);
 
   useEffect(() => {
     setMounted(true);
@@ -69,7 +72,7 @@ export function AppHeader() {
                         "flex items-center gap-1 text-sm font-medium transition-colors",
                         isActive
                           ? "font-semibold text-primary"
-                          : "text-muted-foreground hover:text-foreground"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {item.icon && <item.icon className="h-4 w-4" />}
@@ -77,11 +80,28 @@ export function AppHeader() {
                     </Link>
                   );
                 })}
+              {isSignedIn && isAdmin && (
+                <Link
+                  href="/admin"
+                  className={cn(
+                    "flex items-center gap-1 text-sm font-medium transition-colors",
+                    pathname === "/admin" || pathname.startsWith("/admin/")
+                      ? "font-semibold text-primary"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <Shield className="h-4 w-4" />
+                  Admin
+                </Link>
+              )}
 
               {/* Auth Buttons */}
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+                  <button
+                    type="button"
+                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  >
                     Sign In
                   </button>
                 </SignInButton>
@@ -131,7 +151,7 @@ export function AppHeader() {
                               "flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium transition-all duration-200",
                               isActive
                                 ? "border border-primary/20 bg-primary/10 font-semibold text-primary"
-                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                             )}
                           >
                             {item.icon && <item.icon className="h-5 w-5" />}
@@ -139,10 +159,29 @@ export function AppHeader() {
                           </Link>
                         );
                       })}
+                    {isSignedIn && isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium transition-all duration-200",
+                          pathname === "/admin" ||
+                            pathname.startsWith("/admin/")
+                            ? "border border-primary/20 bg-primary/10 font-semibold text-primary"
+                            : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                        )}
+                      >
+                        <Shield className="h-5 w-5" />
+                        Admin
+                      </Link>
+                    )}
                     <SignedOut>
                       <div className="mt-6 border-t pt-6">
                         <SignInButton mode="modal">
-                          <button className="w-full rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90">
+                          <button
+                            type="button"
+                            className="w-full rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+                          >
                             Sign In
                           </button>
                         </SignInButton>

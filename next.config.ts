@@ -1,23 +1,36 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+
   images: {
-    // Allow Sanity CDN images used by the studio and content
     remotePatterns: [
       {
         protocol: "https",
         hostname: "cdn.sanity.io",
         pathname: "/images/**",
       },
-      // Clerk-hosted profile images
       {
         protocol: "https",
         hostname: "img.clerk.com",
         pathname: "/**",
       },
     ],
+  },
+
+  // 👇 Explicitly acknowledge Turbopack
+  turbopack: {},
+
+  // Silence noisy source-map warnings
+  productionBrowserSourceMaps: false,
+
+  webpack(config) {
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      /Failed to parse source map/,
+      /Invalid source map/,
+    ];
+    return config;
   },
 };
 

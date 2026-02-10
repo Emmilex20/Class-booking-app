@@ -186,6 +186,33 @@ export const CANCELLED_BOOKING_QUERY = defineQuery(`*[
   && status == "cancelled"
 ][0]{ _id }`);
 
+// Fetch upcoming confirmed bookings for reminder processing
+export const UPCOMING_BOOKINGS_FOR_REMINDERS_QUERY = defineQuery(`*[
+  _type == "booking"
+  && status == "confirmed"
+  && classSession->startTime > $windowStart
+  && classSession->startTime <= $windowEnd
+  && defined(user->email)
+]{
+  _id,
+  reminder24hSentAt,
+  reminder1hSentAt,
+  user->{
+    firstName,
+    email
+  },
+  classSession->{
+    _id,
+    startTime,
+    activity->{
+      name
+    },
+    venue->{
+      name
+    }
+  }
+}`);
+
 // Get user's booked session IDs (for showing booked status on session cards)
 export const USER_BOOKED_SESSION_IDS_QUERY = defineQuery(`*[
   _type == "booking"

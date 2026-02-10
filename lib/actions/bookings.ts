@@ -25,6 +25,7 @@ export type BookingResult = {
   message?: string;
   error?: string;
   bookingId?: string;
+  sessionId?: string;
   upgradeRequired?: boolean;
   requiredTier?: string;
   limitReached?: boolean;
@@ -307,7 +308,7 @@ export async function confirmAttendance(
 
     revalidatePath("/bookings");
 
-    return { success: true, message: "Attendance confirmed!" };
+    return { success: true, message: "Attendance confirmed!", sessionId: booking.classSession?._id };
   } catch (error) {
     console.error("Attendance error:", error);
     return { success: false, error: "Failed to confirm attendance" };

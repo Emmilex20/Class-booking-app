@@ -64,7 +64,7 @@ const FloatingObject = ({
       ease: "linear" // Linear feels more consistent for background "drift"
     }}
     className="absolute pointer-events-none z-10"
-    style={{ left, top }}
+    style={{ left, top } as any}
   >
     {children}
   </motion.div>

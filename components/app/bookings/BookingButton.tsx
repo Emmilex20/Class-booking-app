@@ -1,16 +1,16 @@
 "use client";
 
-import { useUser, SignInButton } from "@clerk/nextjs";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { createBooking, cancelBooking } from "@/lib/actions/bookings";
-import Link from "next/link";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import { CheckCircle, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { cancelBooking, createBooking } from "@/lib/actions/bookings";
 import type { Tier } from "@/lib/constants/subscription";
 import {
-  TIER_HIERARCHY,
   TIER_DISPLAY_NAMES,
+  TIER_HIERARCHY,
 } from "@/lib/constants/subscription";
 
 interface BookingButtonProps {
@@ -19,6 +19,9 @@ interface BookingButtonProps {
   isFullyBooked: boolean;
   userTier: Tier | null;
   existingBookingId: string | null;
+  existingBookingStatus?: string | null;
+  classStartTime?: string | null;
+  classDurationMinutes?: number | null;
 }
 
 export function BookingButton({
@@ -27,6 +30,9 @@ export function BookingButton({
   isFullyBooked,
   userTier,
   existingBookingId,
+  existingBookingStatus = null,
+  classStartTime = null,
+  classDurationMinutes = 60,
 }: BookingButtonProps) {
   const { isSignedIn, isLoaded } = useUser();
   const [isPending, startTransition] = useTransition();
@@ -41,6 +47,15 @@ export function BookingButton({
 
   const requiredTier = tierLevel as Tier;
   const requiredTierName = TIER_DISPLAY_NAMES[requiredTier] || tierLevel;
+  const now = new Date();
+  const classStartDate = classStartTime ? new Date(classStartTime) : null;
+  const classEndDate = classStartDate
+    ? new Date(
+        classStartDate.getTime() + (classDurationMinutes ?? 60) * 60 * 1000,
+      )
+    : null;
+  const isPastClass = classEndDate ? now > classEndDate : false;
+  const isAttended = existingBookingStatus === "attended";
 
   const handleBook = () => {
     setError(null);
@@ -85,6 +100,27 @@ export function BookingButton({
 
   // User already has a booking for this session
   if (existingBookingId && !isCancelled) {
+    if (isAttended || isPastClass) {
+      return (
+        <div className="space-y-3">
+          <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 py-3 text-center text-sm font-semibold text-emerald-700">
+            <CheckCircle className="h-4 w-4" />
+            {isAttended ? "Attendance Confirmed" : "Class Completed"}
+          </div>
+          <p className="text-center text-sm text-muted-foreground">
+            This class is in the past, so booking changes are no longer
+            available.
+          </p>
+          <Link
+            href="/bookings"
+            className="block text-center text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            View My Bookings →
+          </Link>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-3">
         <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/10 py-3 text-center text-sm font-semibold text-primary">
@@ -183,9 +219,7 @@ export function BookingButton({
           "Book This Class"
         )}
       </Button>
-      {error && (
-        <p className="text-center text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-center text-sm text-destructive">{error}</p>}
     </div>
   );
 }

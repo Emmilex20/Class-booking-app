@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { confirmAttendance } from "@/lib/actions/bookings";
 import { Button } from "@/components/ui/button";
 import { Check, AlertCircle } from "lucide-react";
@@ -12,6 +13,7 @@ interface BookingActionsProps {
 }
 
 export function BookingActions({ bookingId, canConfirmAttendance }: BookingActionsProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -25,6 +27,9 @@ export function BookingActions({ bookingId, canConfirmAttendance }: BookingActio
         return;
       }
       setConfirmed(true);
+      if (result.sessionId) {
+        router.push(`/classes/${result.sessionId}/live`);
+      }
       // Optionally, you can refresh the page or revalidate
     });
   };

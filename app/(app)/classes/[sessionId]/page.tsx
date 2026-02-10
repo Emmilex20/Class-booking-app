@@ -1,28 +1,28 @@
-import { sanityFetch } from "@/sanity/lib/live";
-import { SESSION_BY_ID_QUERY } from "@/sanity/lib/queries/sessions";
-import { USER_SESSION_BOOKING_QUERY } from "@/sanity/lib/queries/bookings";
-import { urlFor } from "@/sanity/lib/image";
-import { format } from "date-fns";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import { BookingButton } from "@/components/app/bookings/BookingButton";
-import { VenueMap } from "@/components/app/maps/VenueMap";
-import { PortableText } from "@portabletext/react";
-import { getUserTierInfo } from "@/lib/subscription";
 import { auth } from "@clerk/nextjs/server";
+import { PortableText } from "@portabletext/react";
+import { format } from "date-fns";
 import {
-  ChevronRight,
   Calendar,
+  ChevronRight,
   Clock,
-  User,
-  Users,
   MapPin,
   Sparkles,
+  User,
+  Users,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { BookingButton } from "@/components/app/bookings/BookingButton";
+import { VenueMap } from "@/components/app/maps/VenueMap";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TIER_COLORS } from "@/lib/constants/subscription";
+import { getUserTierInfo } from "@/lib/subscription";
+import { urlFor } from "@/sanity/lib/image";
+import { sanityFetch } from "@/sanity/lib/live";
+import { USER_SESSION_BOOKING_QUERY } from "@/sanity/lib/queries/bookings";
+import { SESSION_BY_ID_QUERY } from "@/sanity/lib/queries/sessions";
 
 interface PageProps {
   params: Promise<{ sessionId: string }>;
@@ -323,6 +323,9 @@ export default async function ClassDetailPage({ params }: PageProps) {
                     isFullyBooked={isFullyBooked}
                     userTier={userTier}
                     existingBookingId={existingBooking?._id ?? null}
+                    existingBookingStatus={existingBooking?.status ?? null}
+                    classStartTime={session.startTime}
+                    classDurationMinutes={activity?.duration ?? 60}
                   />
                 </div>
               </CardContent>

@@ -1,13 +1,20 @@
 import { auth } from "@clerk/nextjs/server";
-import { sanityFetch } from "@/sanity/lib/live";
-import { USER_BOOKINGS_QUERY } from "@/sanity/lib/queries/bookings";
-import { isPast } from "date-fns";
-import { redirect } from "next/navigation";
+import { addHours, format, isPast, isWithinInterval } from "date-fns";
+import {
+  ArrowRight,
+  Calendar,
+  Clock,
+  Sparkles,
+  TrendingUp,
+  Video,
+} from "lucide-react";
 import Link from "next/link";
-import { BookingsCalendarView } from "@/components/app/bookings/BookingsCalendarView";
+import { redirect } from "next/navigation";
 import { AttendanceAlert } from "@/components/app/bookings/AttendanceAlert";
 import { BookingCard } from "@/components/app/bookings/BookingCard";
-import { getUsageStats } from "@/lib/subscription";
+import { BookingsCalendarView } from "@/components/app/bookings/BookingsCalendarView";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,15 +22,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Calendar,
-  Clock,
-  TrendingUp,
-  Sparkles,
-  ArrowRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { getUsageStats } from "@/lib/subscription";
+import { sanityFetch } from "@/sanity/lib/live";
+import { USER_BOOKINGS_QUERY } from "@/sanity/lib/queries/bookings";
 
 export default async function BookingsPage() {
   const { userId } = await auth();
@@ -60,6 +61,51 @@ export default async function BookingsPage() {
       return aTime - bTime;
     });
 
+  const now = new Date();
+  const liveNowBookings = validBookings
+    .filter((b) => b.status === "confirmed" || b.status === "attended")
+    .filter((b) => {
+      const startTime = b.classSession?.startTime;
+      if (!startTime) return false;
+
+      const start = new Date(startTime);
+      const duration = b.classSession?.activity?.duration ?? 60;
+      const end = addHours(start, duration / 60);
+
+      return isWithinInterval(now, { start, end });
+    })
+    .sort((a, b) => {
+      const aTime = a.classSession?.startTime
+        ? new Date(a.classSession.startTime).getTime()
+        : 0;
+      const bTime = b.classSession?.startTime
+        ? new Date(b.classSession.startTime).getTime()
+        : 0;
+      return aTime - bTime;
+    });
+
+  const featuredLiveBooking =
+    liveNowBookings.length > 1
+      ? [...liveNowBookings].sort((a, b) => {
+          const aStart = a.classSession?.startTime
+            ? new Date(a.classSession.startTime).getTime()
+            : Number.POSITIVE_INFINITY;
+          const bStart = b.classSession?.startTime
+            ? new Date(b.classSession.startTime).getTime()
+            : Number.POSITIVE_INFINITY;
+
+          return (
+            Math.abs(now.getTime() - aStart) - Math.abs(now.getTime() - bStart)
+          );
+        })[0]
+      : null;
+
+  const secondaryLiveBookings = featuredLiveBooking
+    ? liveNowBookings.filter(
+        (booking) => booking._id !== featuredLiveBooking._id,
+      )
+    : liveNowBookings;
+
   // Sort past bookings (most recent first)
   const pastBookings = validBookings
     .filter(
@@ -93,6 +139,89 @@ export default async function BookingsPage() {
       <main className="container mx-auto px-4 py-8 space-y-8">
         {/* Attendance Confirmation Alert */}
         <AttendanceAlert bookings={bookings} />
+
+        {/* Live Shortcuts */}
+        <section>
+          <div className="mb-6 flex items-center gap-2">
+            <Video className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold">Join Live Now</h2>
+            <Badge variant="secondary" className="ml-2">
+              {liveNowBookings.length}
+            </Badge>
+          </div>
+          {liveNowBookings.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  No live classes right now
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {featuredLiveBooking && (
+                <Card className="border-primary/40 bg-primary/5">
+                  <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="mb-1 flex items-center gap-2">
+                        <Badge variant="default">Recommended</Badge>
+                      </div>
+                      <p className="truncate font-semibold">
+                        {featuredLiveBooking.classSession?.activity?.name ??
+                          "Live class"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {featuredLiveBooking.classSession?.venue?.name ??
+                          "Unknown Venue"}{" "}
+                        •{" "}
+                        {featuredLiveBooking.classSession?.startTime
+                          ? format(
+                              new Date(
+                                featuredLiveBooking.classSession.startTime,
+                              ),
+                              "h:mm a",
+                            )
+                          : "Time unavailable"}
+                      </p>
+                    </div>
+                    <Button asChild size="sm">
+                      <Link
+                        href={`/classes/${featuredLiveBooking.classSession?._id}/live`}
+                      >
+                        Open Live Form
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+              {secondaryLiveBookings.map((booking) => (
+                <Card key={booking._id}>
+                  <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">
+                        {booking.classSession?.activity?.name ?? "Live class"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {booking.classSession?.venue?.name ?? "Unknown Venue"} •{" "}
+                        {booking.classSession?.startTime
+                          ? format(
+                              new Date(booking.classSession.startTime),
+                              "h:mm a",
+                            )
+                          : "Time unavailable"}
+                      </p>
+                    </div>
+                    <Button asChild size="sm">
+                      <Link href={`/classes/${booking.classSession?._id}/live`}>
+                        Open Live Form
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
 
         {/* Calendar View */}
         <section>

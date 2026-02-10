@@ -35,11 +35,19 @@ export function SessionEditor({ sessionId }: SessionEditorProps) {
   const { data: maxCapacity } = useDocument({ ...handle, path: "maxCapacity" });
   const { data: status } = useDocument({ ...handle, path: "status" });
   const { data: venue } = useDocument({ ...handle, path: "venue" });
+  const { data: liveStreamUrl } = useDocument({
+    ...handle,
+    path: "liveStreamUrl",
+  });
 
   const editStartTime = useEditDocument({ ...handle, path: "startTime" });
   const editMaxCapacity = useEditDocument({ ...handle, path: "maxCapacity" });
   const editStatus = useEditDocument({ ...handle, path: "status" });
   const editVenue = useEditDocument({ ...handle, path: "venue" });
+  const editLiveStreamUrl = useEditDocument({
+    ...handle,
+    path: "liveStreamUrl",
+  });
 
   // Extract venue ref
   const venueRef = venue as { _ref?: string } | undefined;
@@ -59,7 +67,7 @@ export function SessionEditor({ sessionId }: SessionEditorProps) {
 
   return (
     <div className="space-y-4 border-t pt-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="space-y-2">
           <Label htmlFor={`startTime-${sessionId}`}>Date & Time</Label>
           <Input
@@ -107,6 +115,16 @@ export function SessionEditor({ sessionId }: SessionEditorProps) {
           <Suspense fallback={<Skeleton className="h-10 w-full" />}>
             <VenuePicker value={currentVenueId} onChange={handleVenueChange} />
           </Suspense>
+        </div>
+        <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+          <Label htmlFor={`liveStreamUrl-${sessionId}`}>Live Stream URL</Label>
+          <Input
+            id={`liveStreamUrl-${sessionId}`}
+            type="url"
+            placeholder="https://youtube.com/watch?v=..."
+            value={(liveStreamUrl as string) ?? ""}
+            onChange={(e) => editLiveStreamUrl(e.target.value)}
+          />
         </div>
       </div>
       <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
-import { defineField, defineType } from "sanity";
 import { ClipboardIcon } from "@sanity/icons";
+import { defineField, defineType } from "sanity";
 
 export const bookingType = defineType({
   name: "booking",
@@ -57,6 +57,20 @@ export const bookingType = defineType({
       description: "When the user confirmed attendance",
       readOnly: true,
       hidden: ({ document }) => document?.status !== "attended",
+    }),
+    defineField({
+      name: "reminder24hSentAt",
+      title: "24 Hour Reminder Sent At",
+      type: "datetime",
+      description: "Timestamp when the 24-hour reminder email was sent",
+      readOnly: true,
+    }),
+    defineField({
+      name: "reminder1hSentAt",
+      title: "1 Hour Reminder Sent At",
+      type: "datetime",
+      description: "Timestamp when the 1-hour reminder email was sent",
+      readOnly: true,
     }),
   ],
   orderings: [

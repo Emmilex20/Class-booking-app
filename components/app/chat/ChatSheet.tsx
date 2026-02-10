@@ -1,7 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
+
+// Simple helper to generate IDs for local messages
+function makeId(prefix = "msg") {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+}
+
+// Helper to convert plain text to UI message shape
+function textToUIMessage(role: "user" | "assistant", text: string) {
+  return {
+    id: makeId(role),
+    role,
+    parts: [{ type: "text", text }],
+  };
+}
 import { useAuth } from "@clerk/nextjs";
 import { Sparkles, Send, Loader2, X, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +38,9 @@ export function ChatSheet() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status } = useChat();
+  // Local simple chat state (replaces useChat integration for now)
+  const [messages, setMessages] = useState<Array<any>>([]);
+  const [status, setStatus] = useState<"ready" | "submitted" | "streaming">("ready");
   const isLoading = status === "streaming" || status === "submitted";
 
   // Auto-scroll to bottom when new messages arrive or streaming updates
@@ -37,16 +52,48 @@ export function ChatSheet() {
   // Handle pending message - send it when chat opens
   useEffect(() => {
     if (isOpen && pendingMessage && !isLoading) {
-      sendMessage({ text: pendingMessage });
+      void sendMessage({ text: pendingMessage });
       clearPendingMessage();
     }
-  }, [isOpen, pendingMessage, isLoading, sendMessage, clearPendingMessage]);
+  }, [isOpen, pendingMessage, isLoading, clearPendingMessage]);
+
+  const sendMessage = async (payload: { text: string } | string) => {
+    const text = typeof payload === "string" ? payload : payload.text;
+
+    // Append user message
+    const userMsg = textToUIMessage("user", text);
+    setMessages((m) => [...m, userMsg]);
+    setStatus("submitted");
+
+    try {
+      setStatus("streaming");
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: text }] }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`AI error: ${res.status}`);
+      }
+
+      const json = await res.json();
+      const assistantText = (json && json.text) || "(no response)";
+
+      const assistantMsg = textToUIMessage("assistant", assistantText);
+      setMessages((m) => [...m, assistantMsg]);
+      setStatus("ready");
+    } catch (err) {
+      console.error("Chat sendMessage error:", err);
+      setStatus("ready");
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    sendMessage({ text: input });
+    void sendMessage(input);
     setInput("");
   };
 
@@ -80,7 +127,7 @@ export function ChatSheet() {
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4">
           {messages.length === 0 ? (
             <WelcomeScreen
-              onSuggestionClick={sendMessage}
+              onSuggestionClick={(payload: { text: string }) => void sendMessage(payload)}
               isSignedIn={isSignedIn ?? false}
             />
           ) : (

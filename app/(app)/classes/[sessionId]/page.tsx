@@ -57,7 +57,8 @@ export default async function ClassDetailPage({ params }: PageProps) {
   const startDate = new Date(session.startTime);
   const activity = session.activity;
   const venue = session.venue;
-  const tierLevel = activity?.tierLevel ?? "basic";
+  const tierLevel = (activity?.tierLevel ??
+    "basic") as keyof typeof TIER_COLORS;
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,22 +108,24 @@ export default async function ClassDetailPage({ params }: PageProps) {
             {/* Image Gallery */}
             {activity?.images && activity.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {activity.images.slice(1).map((image, i) => {
-                  if (!image.asset?._ref) return null;
-                  return (
-                    <div
-                      key={image.asset._ref}
-                      className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-muted shrink-0 ring-2 ring-transparent hover:ring-primary transition-all cursor-pointer"
-                    >
-                      <Image
-                        src={urlFor(image).width(96).height(96).url()}
-                        alt={`${activity.name ?? "Class"} ${i + 2}`}
-                        fill
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                  );
-                })}
+                {activity.images
+                  .slice(1)
+                  .map((image: { asset?: { _ref?: string } }, i: number) => {
+                    if (!image.asset?._ref) return null;
+                    return (
+                      <div
+                        key={image.asset._ref}
+                        className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-muted shrink-0 ring-2 ring-transparent hover:ring-primary transition-all cursor-pointer"
+                      >
+                        <Image
+                          src={urlFor(image).width(96).height(96).url()}
+                          alt={`${activity.name ?? "Class"} ${i + 2}`}
+                          fill
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    );
+                  })}
               </div>
             )}
 
@@ -195,7 +198,7 @@ export default async function ClassDetailPage({ params }: PageProps) {
                         Amenities
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        {venue.amenities.map((amenity) => (
+                        {venue.amenities.map((amenity: string) => (
                           <Badge key={amenity} variant="secondary">
                             {amenity}
                           </Badge>
